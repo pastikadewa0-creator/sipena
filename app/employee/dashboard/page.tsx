@@ -61,7 +61,6 @@ export default function EmployeeDashboardPage() {
                 <QuickActionItem href="/employee/izin?type=sakit" icon={Stethoscope} label="Sakit" color="text-red-500" bgColor="bg-red-50" />
                 <QuickActionItem href="/employee/izin?type=izin" icon={FileText} label="Izin" color="text-blue-500" bgColor="bg-blue-50" />
                 <QuickActionItem href="/employee/izin?type=cuti" icon={Plane} label="Cuti" color="text-emerald-500" bgColor="bg-emerald-50" />
-                <QuickActionItem href="#" icon={UserCog} label="Ubah data" color="text-amber-500" bgColor="bg-amber-50" isComingSoon />
               </div>
             </div>
           </Card>
@@ -72,15 +71,10 @@ export default function EmployeeDashboardPage() {
           <h3 className="text-sm font-semibold text-muted-foreground mb-6">Kelola data pribadimu</h3>
           
           <div className="grid grid-cols-4 gap-y-8 gap-x-2">
-            <GridActionItem href="#" icon={Wallet} label="Slip Gaji" color="text-teal-600" bgColor="bg-teal-50" isComingSoon />
             <GridActionItem href="/employee/absensi" icon={Clock} label="Kehadiran" color="text-indigo-600" bgColor="bg-indigo-50" />
-            <GridActionItem href="#" icon={Users} label="Tim Saya" color="text-purple-600" bgColor="bg-purple-50" isComingSoon />
-            <GridActionItem href="#" icon={ClipboardCheck} label="Persetujuan" color="text-pink-600" bgColor="bg-pink-50" isComingSoon />
-            
             <GridActionItem href="/employee/izin?type=cuti" icon={Plane} label="Cuti" color="text-emerald-500" bgColor="bg-emerald-50" />
             <GridActionItem href="/employee/izin?type=sakit" icon={Stethoscope} label="Sakit" color="text-red-500" bgColor="bg-red-50" />
             <GridActionItem href="/employee/izin?type=izin" icon={FileText} label="Izin" color="text-blue-500" bgColor="bg-blue-50" />
-            <GridActionItem href="#" icon={LayoutGrid} label="Lainnya" color="text-gray-600" bgColor="bg-gray-100" isComingSoon />
           </div>
         </div>
 

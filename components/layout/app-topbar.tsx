@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
-import { Bell, Menu } from 'lucide-react'
+import { Bell, Menu, ChevronLeft } from 'lucide-react'
 import Link from 'next/link'
 import useSWR from 'swr'
 import { cn } from '@/lib/utils'
@@ -99,6 +99,17 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
             aria-label="Toggle menu"
           >
             <Menu className="h-5 w-5" />
+          </Button>
+        )}
+        {role === 'karyawan' && !isEmployeeDashboard && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => router.back()}
+            aria-label="Kembali"
+            className="-ml-2"
+          >
+            <ChevronLeft className="h-6 w-6" />
           </Button>
         )}
         <div>
