@@ -9,12 +9,17 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Building2, Eye, EyeOff, Loader2, AlertCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import useSWR from 'swr'
+import Image from 'next/image'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  const { data: settings } = useSWR('/api/settings', (url: string) => fetch(url).then(r => r.json()))
+  const siteLogo = settings?.siteLogo
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
@@ -54,8 +59,12 @@ export default function LoginPage() {
       {/* Header */}
       <CardHeader className="space-y-4 text-center pb-4">
         <div className="flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/30">
-            <Building2 className="h-8 w-8 text-primary-foreground" />
+          <div className="relative flex h-16 w-16 items-center justify-center overflow-hidden rounded-2xl bg-primary shadow-lg shadow-primary/30">
+            {siteLogo ? (
+              <Image src={siteLogo} alt="Logo" fill className="object-contain p-2" unoptimized />
+            ) : (
+              <Building2 className="h-8 w-8 text-primary-foreground" />
+            )}
           </div>
         </div>
         <div>

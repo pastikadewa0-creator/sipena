@@ -11,7 +11,10 @@ import {
   LogOut,
   ChevronRight,
   Building2,
+  Settings,
 } from 'lucide-react'
+import useSWR from 'swr'
+import Image from 'next/image'
 import { cn } from '@/lib/utils'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
@@ -27,6 +30,7 @@ const adminNav: NavItem[] = [
   { href: '/admin/karyawan', icon: Users, label: 'Data Karyawan' },
   { href: '/admin/absensi', icon: CalendarCheck, label: 'Rekap Absensi' },
   { href: '/admin/izin', icon: FileText, label: 'Pengajuan Izin' },
+  { href: '/admin/pengaturan', icon: Settings, label: 'Pengaturan' },
 ]
 
 const employeeNav: NavItem[] = [
@@ -45,6 +49,10 @@ export function AppSidebar({ role, name }: AppSidebarProps) {
   const router = useRouter()
   const navItems = role === 'admin' ? adminNav : employeeNav
 
+  const { data: settings } = useSWR('/api/settings', (url: string) => fetch(url).then(r => r.json()))
+  const siteName = settings?.siteName || 'SIPENA'
+  const siteLogo = settings?.siteLogo
+
   async function handleLogout() {
     try {
       await fetch('/api/auth/logout', { method: 'POST' })
@@ -59,11 +67,15 @@ export function AppSidebar({ role, name }: AppSidebarProps) {
     <aside className="sidebar-gradient flex h-full w-64 flex-col border-r border-sidebar-border">
       {/* Logo */}
       <div className="flex h-16 items-center gap-3 border-b border-sidebar-border px-6">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-          <Building2 className="h-5 w-5 text-primary-foreground" />
+        <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-primary">
+          {siteLogo ? (
+            <Image src={siteLogo} alt={siteName} fill className="object-contain p-1" unoptimized />
+          ) : (
+            <Building2 className="h-5 w-5 text-primary-foreground" />
+          )}
         </div>
         <div>
-          <p className="text-sm font-bold text-sidebar-foreground">SIPENA</p>
+          <p className="text-sm font-bold text-sidebar-foreground">{siteName}</p>
           <p className="text-xs text-sidebar-foreground/50">Sistem Absensi</p>
         </div>
       </div>
