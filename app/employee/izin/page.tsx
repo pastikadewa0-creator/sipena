@@ -29,6 +29,8 @@ interface LeaveRequest {
   documentUrl: string
   status: 'pending' | 'approved' | 'rejected'
   createdAt: string
+  reviewedBy?: { name: string } | null
+  reviewedAt?: string | null
 }
 
 const leaveTypeLabel: Record<string, string> = {
@@ -59,6 +61,8 @@ export default function EmployeeIzinPage() {
   const [total, setTotal] = useState(0)
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [detailDialogOpen, setDetailDialogOpen] = useState(false)
+  const [selectedLeave, setSelectedLeave] = useState<LeaveRequest | null>(null)
   const [form, setForm] = useState<FormState>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
 
@@ -148,7 +152,14 @@ export default function EmployeeIzinPage() {
               </TableRow>
             ) : (
               leaves.map((leave) => (
-                <TableRow key={leave._id} className="hover:bg-muted/30">
+                <TableRow 
+                  key={leave._id} 
+                  className="hover:bg-muted/30 cursor-pointer transition-colors"
+                  onClick={() => {
+                    setSelectedLeave(leave)
+                    setDetailDialogOpen(true)
+                  }}
+                >
                   <TableCell><StatusBadge status={leave.type} /></TableCell>
                   <TableCell className="text-sm">
                     {format(new Date(leave.startDate), 'dd MMM yyyy', { locale: localeId })}
@@ -166,6 +177,7 @@ export default function EmployeeIzinPage() {
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-xs text-primary hover:underline"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         Lihat
                       </a>
@@ -262,6 +274,75 @@ export default function EmployeeIzinPage() {
               </Button>
             </DialogFooter>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Detail Dialog */}
+      <Dialog open={detailDialogOpen} onOpenChange={setDetailDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Detail Pengajuan {selectedLeave?.type ? leaveTypeLabel[selectedLeave.type] : ''}</DialogTitle>
+          </DialogHeader>
+          
+          {selectedLeave && (
+            <div className="space-y-4 py-4">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Status</span>
+                <StatusBadge status={selectedLeave.status} />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground block">Tanggal Mulai</span>
+                  <span className="text-sm font-medium">
+                    {format(new Date(selectedLeave.startDate), 'dd MMM yyyy', { locale: localeId })}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-xs text-muted-foreground block">Tanggal Selesai</span>
+                  <span className="text-sm font-medium">
+                    {format(new Date(selectedLeave.endDate), 'dd MMM yyyy', { locale: localeId })}
+                  </span>
+                </div>
+              </div>
+
+              <div className="space-y-1 border-t pt-4">
+                <span className="text-xs text-muted-foreground block">Alasan</span>
+                <p className="text-sm whitespace-pre-wrap bg-muted/30 p-3 rounded-lg border">{selectedLeave.reason}</p>
+              </div>
+
+              {selectedLeave.documentUrl && (
+                <div className="space-y-1 border-t pt-4">
+                  <span className="text-xs text-muted-foreground block">Dokumen Lampiran</span>
+                  <a
+                    href={selectedLeave.documentUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline flex items-center mt-1"
+                  >
+                    <FileText className="mr-2 h-4 w-4" />
+                    Lihat Dokumen
+                  </a>
+                </div>
+              )}
+
+              {selectedLeave.status !== 'pending' && (
+                <div className="space-y-1 border-t pt-4">
+                  <span className="text-xs text-muted-foreground block">Ditinjau Oleh</span>
+                  <p className="text-sm font-medium">{selectedLeave.reviewedBy?.name || 'Admin'}</p>
+                  {selectedLeave.reviewedAt && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Pada {format(new Date(selectedLeave.reviewedAt), 'dd MMM yyyy HH:mm', { locale: localeId })}
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <DialogFooter>
+            <Button onClick={() => setDetailDialogOpen(false)}>Tutup</Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

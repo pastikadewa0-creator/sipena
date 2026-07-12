@@ -49,6 +49,17 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
           <div className="mx-auto max-w-4xl">{children}</div>
         </main>
 
+        {/* Floating Action Button (Absensi) */}
+        {pathname !== '/employee/absensi' && (
+          <Link
+            href="/employee/absensi"
+            className="fixed bottom-20 right-4 md:right-8 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-[0_4px_14px_0_rgb(0,0,0,0.39)] shadow-primary/50 transition-transform hover:scale-105 active:scale-95"
+            aria-label="Absen Sekarang"
+          >
+            <CalendarCheck className="h-6 w-6" />
+          </Link>
+        )}
+
         {/* Bottom Navigation Bar */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card pb-safe shadow-lg">
           <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
