@@ -10,8 +10,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import {
@@ -76,10 +74,10 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
     }
   }
 
-  const [profileOpen, setProfileOpen] = useState(false)
+  const [notificationsOpen, setNotificationsOpen] = useState(false)
 
   const { data: userProfile, isLoading: profileLoading } = useSWR(
-    profileOpen ? '/api/users/me' : null,
+    '/api/users/me',
     (url: string) => fetch(url).then(r => r.json())
   )
 
@@ -112,69 +110,27 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
 
       <div className="flex items-center gap-2">
         {/* Notification bell */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className="relative inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring hover:bg-accent hover:text-accent-foreground h-9 w-9"
-            aria-label="Notifikasi"
-          >
-            <Bell className="h-5 w-5" />
-            {/* Admin pending count */}
-            {role === 'admin' && pendingCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
-                {pendingCount > 9 ? '9+' : pendingCount}
-              </span>
-            )}
-            {/* Employee unread notifications count */}
-            {role === 'karyawan' && employeeNotifications && employeeNotifications.length > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
-                {employeeNotifications.length > 9 ? '9+' : employeeNotifications.length}
-              </span>
-            )}
-          </DropdownMenuTrigger>
-          
-          <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
-            <DropdownMenuLabel className="flex justify-between items-center">
-              <span>Notifikasi</span>
-              {role === 'karyawan' && employeeNotifications?.length > 0 && (
-                <Button variant="ghost" size="sm" onClick={markNotificationsRead} className="h-auto p-1 text-xs">
-                  Tandai dibaca
-                </Button>
-              )}
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            
-            {role === 'admin' ? (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                <p>Anda memiliki {pendingCount} pengajuan izin menunggu.</p>
-                <Link href="/admin/izin" className="text-primary hover:underline mt-2 block">
-                  Lihat Pengajuan
-                </Link>
-              </div>
-            ) : (
-              // Employee notifications list
-              <>
-                {!employeeNotifications || employeeNotifications.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    Belum ada notifikasi baru.
-                  </div>
-                ) : (
-                  employeeNotifications.map((notif: any) => (
-                    <DropdownMenuItem key={notif._id} className="flex flex-col items-start p-3 gap-1 whitespace-normal">
-                      <div className="flex items-center justify-between w-full">
-                        <span className="font-semibold text-sm">{notif.title}</span>
-                        {!notif.isRead && <span className="h-2 w-2 bg-blue-500 rounded-full"></span>}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{notif.message}</span>
-                      <span className="text-[10px] text-muted-foreground mt-1">
-                        {new Date(notif.createdAt).toLocaleDateString('id-ID')}
-                      </span>
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative h-9 w-9"
+          onClick={() => setNotificationsOpen(true)}
+          aria-label="Notifikasi"
+        >
+          <Bell className="h-5 w-5" />
+          {/* Admin pending count */}
+          {role === 'admin' && pendingCount > 0 && (
+            <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
+              {pendingCount > 9 ? '9+' : pendingCount}
+            </span>
+          )}
+          {/* Employee unread notifications count */}
+          {role === 'karyawan' && employeeNotifications && employeeNotifications.length > 0 && (
+            <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
+              {employeeNotifications.length > 9 ? '9+' : employeeNotifications.length}
+            </span>
+          )}
+        </Button>
 
         {/* User dropdown */}
         <DropdownMenu>
@@ -189,79 +145,122 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
             </Avatar>
             <span className="hidden sm:block">{name}</span>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuLabel>
-              <p className="font-medium">{name}</p>
-              <p className="text-xs text-muted-foreground capitalize font-normal">{role}</p>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem
-              onSelect={(e) => {
-                e.preventDefault()
-                setProfileOpen(true)
-              }}
-            >
-              Lihat Profil
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={handleLogout}
-              className="text-destructive focus:text-destructive"
-            >
-              Keluar
-            </DropdownMenuItem>
+          <DropdownMenuContent align="end" className="w-72 p-0">
+            {profileLoading ? (
+               <div className="p-6 text-center text-sm text-muted-foreground">Memuat profil...</div>
+            ) : userProfile ? (
+               <div className="flex flex-col items-center gap-3 p-6 pb-4 border-b">
+                 <Avatar className="h-20 w-20">
+                   {userProfile.photoUrl ? (
+                     <img src={userProfile.photoUrl} alt={userProfile.name} className="object-cover w-full h-full" />
+                   ) : (
+                     <AvatarFallback className="bg-primary text-primary-foreground text-2xl font-bold">
+                       {userProfile.name.charAt(0).toUpperCase()}
+                     </AvatarFallback>
+                   )}
+                 </Avatar>
+                 <div className="text-center w-full space-y-1 mt-2">
+                   <p className="font-bold text-base">{userProfile.name}</p>
+                   <p className="text-xs text-muted-foreground font-mono">@{userProfile.username}</p>
+                   
+                   <div className="flex flex-col gap-1 mt-3 bg-muted/40 p-3 rounded-lg border text-xs text-left">
+                     <div className="flex justify-between border-b pb-1">
+                       <span className="text-muted-foreground">Jabatan</span>
+                       <span className="font-medium">{userProfile.position || '-'}</span>
+                     </div>
+                     <div className="flex justify-between border-b pb-1 pt-1">
+                       <span className="text-muted-foreground">Email</span>
+                       <span className="font-medium truncate max-w-[120px]" title={userProfile.email}>{userProfile.email}</span>
+                     </div>
+                     <div className="flex justify-between pt-1">
+                       <span className="text-muted-foreground">Status</span>
+                       <span className="font-medium text-emerald-600">
+                         {userProfile.isActive ? 'Aktif' : 'Nonaktif'}
+                       </span>
+                     </div>
+                   </div>
+
+                   {userProfile.documentUrl && (
+                     <a href={userProfile.documentUrl} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline block mt-3 font-medium">
+                       Lihat Dokumen Kontrak
+                     </a>
+                   )}
+                 </div>
+               </div>
+            ) : (
+               <div className="p-6 text-center text-sm text-destructive">Gagal memuat profil</div>
+            )}
+            <div className="p-2">
+              <DropdownMenuItem
+                onClick={handleLogout}
+                className="text-destructive focus:text-destructive cursor-pointer justify-center font-medium py-2"
+              >
+                Keluar Akun
+              </DropdownMenuItem>
+            </div>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
 
-      <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Profil Saya</DialogTitle>
+      <Dialog open={notificationsOpen} onOpenChange={setNotificationsOpen}>
+        <DialogContent className="sm:max-w-md max-h-[85vh] flex flex-col p-0 overflow-hidden">
+          <DialogHeader className="flex flex-row items-center justify-between p-6 pb-4 border-b">
+            <DialogTitle>Notifikasi</DialogTitle>
+            {role === 'karyawan' && employeeNotifications?.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={markNotificationsRead} className="h-8 text-xs">
+                Tandai semua dibaca
+              </Button>
+            )}
           </DialogHeader>
-          <div className="flex flex-col items-center gap-4 py-4">
-            {profileLoading ? (
-              <p className="text-sm text-muted-foreground">Memuat data...</p>
-            ) : userProfile ? (
-              <>
-                <Avatar className="h-24 w-24">
-                  {userProfile.photoUrl ? (
-                    <img src={userProfile.photoUrl} alt={userProfile.name} className="object-cover w-full h-full" />
-                  ) : (
-                    <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
-                      {userProfile.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="text-center space-y-1 w-full">
-                  <h3 className="text-xl font-bold">{userProfile.name}</h3>
-                  <p className="text-sm font-mono text-muted-foreground">@{userProfile.username}</p>
-                  <div className="flex flex-col gap-2 mt-4 text-sm bg-muted/30 p-4 rounded-xl border">
-                    <div className="flex justify-between border-b pb-2">
-                      <span className="text-muted-foreground">Jabatan</span>
-                      <span className="font-medium">{userProfile.position || '-'}</span>
-                    </div>
-                    <div className="flex justify-between border-b pb-2 pt-2">
-                      <span className="text-muted-foreground">Email</span>
-                      <span className="font-medium">{userProfile.email}</span>
-                    </div>
-                    <div className="flex justify-between pt-2">
-                      <span className="text-muted-foreground">Status</span>
-                      <span className="font-medium text-emerald-600">
-                        {userProfile.isActive ? 'Aktif' : 'Nonaktif'}
-                      </span>
-                    </div>
-                  </div>
-                  {userProfile.documentUrl && (
-                    <div className="mt-4 pt-4">
-                      <a href={userProfile.documentUrl} target="_blank" rel="noreferrer" className="text-sm text-blue-500 hover:underline flex justify-center items-center gap-2">
-                        <span>Lihat Dokumen Kontrak</span>
-                      </a>
-                    </div>
-                  )}
+          <div className="flex-1 overflow-y-auto">
+            {role === 'admin' ? (
+              <div className="p-8 text-center flex flex-col items-center justify-center h-full">
+                <div className="bg-primary/10 w-16 h-16 rounded-full flex items-center justify-center mb-4 mx-auto">
+                  <Bell className="h-8 w-8 text-primary" />
                 </div>
-              </>
+                <p className="text-muted-foreground mb-4">
+                  Anda memiliki <strong className="text-foreground">{pendingCount}</strong> pengajuan izin menunggu persetujuan.
+                </p>
+                <Link 
+                  href="/admin/izin" 
+                  onClick={() => setNotificationsOpen(false)}
+                  className="inline-flex h-9 items-center justify-center rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90"
+                >
+                  Lihat Pengajuan
+                </Link>
+              </div>
             ) : (
-              <p className="text-sm text-destructive">Gagal memuat profil</p>
+              // Employee notifications list
+              <>
+                {!employeeNotifications || employeeNotifications.length === 0 ? (
+                  <div className="p-8 text-center flex flex-col items-center justify-center h-full text-muted-foreground">
+                    <Bell className="h-12 w-12 opacity-20 mb-3 mx-auto" />
+                    Belum ada notifikasi baru.
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    {employeeNotifications.map((notif: any) => (
+                      <div key={notif._id} className="flex flex-col p-5 border-b hover:bg-muted/30 transition-colors">
+                        <div className="flex items-start justify-between gap-4">
+                          <h4 className="font-semibold text-sm leading-none">{notif.title}</h4>
+                          {!notif.isRead && <span className="h-2 w-2 mt-1 shrink-0 bg-blue-500 rounded-full"></span>}
+                        </div>
+                        <p className="text-sm text-muted-foreground mt-2">{notif.message}</p>
+                        <span className="text-xs text-muted-foreground mt-3 font-medium opacity-70">
+                          {new Date(notif.createdAt).toLocaleDateString('id-ID', {
+                            weekday: 'long',
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </DialogContent>
