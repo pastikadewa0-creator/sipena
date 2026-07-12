@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation'
 import { Bell, Menu } from 'lucide-react'
 import Link from 'next/link'
 import useSWR from 'swr'
+import { cn } from '@/lib/utils'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -81,8 +82,13 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
     (url: string) => fetch(url).then(r => r.json())
   )
 
+  const isEmployeeDashboard = role === 'karyawan' && pathname === '/employee/dashboard'
+
   return (
-    <header className="flex h-16 items-center justify-between border-b bg-card px-6">
+    <header className={cn(
+      "flex h-16 items-center justify-between px-6 transition-colors",
+      isEmployeeDashboard ? "bg-primary text-primary-foreground border-none" : "border-b bg-card text-foreground"
+    )}>
       <div className="flex items-center gap-3">
         {role === 'admin' && (
           <Button
@@ -96,8 +102,8 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
           </Button>
         )}
         <div>
-          <h1 className="text-lg font-semibold text-foreground">{title}</h1>
-          <p className="hidden text-xs text-muted-foreground sm:block">
+          <h1 className="text-lg font-semibold">{isEmployeeDashboard ? 'Gajianku' : title}</h1>
+          <p className={cn("hidden text-xs sm:block", isEmployeeDashboard ? "text-primary-foreground/80" : "text-muted-foreground")}>
             {new Date().toLocaleDateString('id-ID', {
               weekday: 'long',
               year: 'numeric',
@@ -139,7 +145,7 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
             aria-label="Menu pengguna"
           >
             <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary text-primary-foreground text-sm font-bold">
+              <AvatarFallback className={cn("text-sm font-bold", isEmployeeDashboard ? "bg-primary-foreground text-primary" : "bg-primary text-primary-foreground")}>
                 {name.charAt(0).toUpperCase()}
               </AvatarFallback>
             </Avatar>

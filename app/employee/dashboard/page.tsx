@@ -1,168 +1,160 @@
-import type { Metadata } from 'next'
-import { verifySession } from '@/lib/dal'
-import { connectDB } from '@/lib/db'
-import Attendance from '@/models/Attendance'
-import LeaveRequest from '@/models/LeaveRequest'
-import { SummaryCard } from '@/components/ui/summary-card'
-import { StatusBadge } from '@/components/ui/status-badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { CalendarCheck, Clock, FileText, CheckCircle2 } from 'lucide-react'
-import { format } from 'date-fns'
-import { id as localeId } from 'date-fns/locale'
+'use client'
 
-export const metadata: Metadata = {
-  title: 'Dashboard — SIPENA',
-  description: 'Ringkasan absensi dan izin Anda',
-}
+import { useEffect, useState } from 'react'
+import { Card } from '@/components/ui/card'
+import { 
+  Stethoscope, 
+  FileText, 
+  Plane, 
+  UserCog, 
+  Wallet, 
+  Clock, 
+  Users, 
+  ClipboardCheck, 
+  LayoutGrid
+} from 'lucide-react'
+import Link from 'next/link'
+import { toast } from 'sonner'
+import useSWR from 'swr'
 
-export default async function EmployeeDashboardPage() {
-  const session = await verifySession()
-  await connectDB()
+export default function EmployeeDashboardPage() {
+  const { data: session, isLoading } = useSWR('/api/users/me', (url: string) => fetch(url).then(r => r.json()))
+  
+  const firstName = session?.name ? session.name.split(' ')[0] : 'Karyawan'
 
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
-  const tomorrow = new Date(today)
-  tomorrow.setDate(tomorrow.getDate() + 1)
-
-  const currentMonth = new Date()
-  currentMonth.setDate(1)
-  currentMonth.setHours(0, 0, 0, 0)
-
-  const [todayAttendance, recentLeaves, monthlyAttendance, approvedLeaves] = await Promise.all([
-    Attendance.findOne({
-      userId: session.userId,
-      date: { $gte: today, $lt: tomorrow },
-    }).lean(),
-    LeaveRequest.find({ userId: session.userId })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean(),
-    Attendance.countDocuments({
-      userId: session.userId,
-      date: { $gte: currentMonth },
-      status: 'hadir',
-    }),
-    LeaveRequest.countDocuments({
-      userId: session.userId,
-      status: 'approved',
-    }),
-  ])
-
-  const todayAtt = todayAttendance as {
-    checkIn?: Date; checkOut?: Date; status?: string
-  } | null
-
-  const leaveTypeLabel: Record<string, string> = {
-    izin: 'Izin', sakit: 'Sakit', cuti: 'Cuti', tugas_luar: 'Tugas Luar',
-  }
+  useEffect(() => {
+    (window as any).showComingSoonToast = () => {
+      toast.info('Fitur Segera Hadir!')
+    }
+  }, [])
 
   return (
-    <div className="space-y-6">
-      {/* Greeting */}
-      <div>
-        <h2 className="text-xl font-semibold">
-          Halo, {session.name.split(' ')[0]}! 👋
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          {format(new Date(), "EEEE, dd MMMM yyyy", { locale: localeId })}
-        </p>
+    <div className="-mx-4 -mt-4 md:-mx-6 md:-mt-6 min-h-screen bg-muted/30">
+      {/* Teal Header Section */}
+      <div className="bg-primary px-6 pb-24 pt-8 text-primary-foreground relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute right-0 top-0 opacity-20 pointer-events-none">
+          <svg width="150" height="150" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <path fill="currentColor" d="M45.7,-76.4C58.9,-69.3,69.2,-55.4,77.7,-40.7C86.2,-26,93,-10.5,91.8,4.5C90.6,19.5,81.4,34,71.2,46.7C61,59.4,49.8,70.3,35.9,76.5C22,82.7,5.4,84.2,-10.5,81.4C-26.4,78.6,-41.6,71.5,-53.6,60.6C-65.6,49.7,-74.4,35,-79.6,19.3C-84.8,3.6,-86.4,-13.2,-81,-27.9C-75.6,-42.6,-63.2,-55.2,-49.1,-62.4C-35,-69.6,-19.2,-71.4,-2.2,-68.8C14.8,-66.2,29.6,-59.2,45.7,-76.4Z" transform="translate(100 100) scale(1.1)" />
+          </svg>
+        </div>
+        
+        <div className="relative z-10">
+          <h2 className="text-2xl font-bold tracking-tight">
+            Hi, {isLoading ? '...' : firstName}!
+          </h2>
+          <p className="mt-1 text-primary-foreground/90 font-medium">
+            Jangan lupa bahagia
+          </p>
+        </div>
       </div>
 
-      {/* Status absen hari ini */}
-      <Card className="border-l-4 border-l-primary overflow-hidden">
-        <CardContent className="pt-5">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-              <CalendarCheck className="h-6 w-6 text-primary" />
+      {/* Main Content Area overlapping header */}
+      <div className="-mt-12 relative z-20">
+        
+        {/* Quick Actions Card */}
+        <div className="px-4 md:px-6 mb-8">
+          <Card className="shadow-xl shadow-primary/10 border-none rounded-2xl overflow-hidden">
+            <div className="p-4 bg-card">
+              <h3 className="text-sm font-semibold text-muted-foreground mb-4">Saya ingin membuat pengajuan</h3>
+              <div className="grid grid-cols-4 gap-2">
+                <QuickActionItem href="/employee/izin?type=sakit" icon={Stethoscope} label="Sakit" color="text-red-500" bgColor="bg-red-50" />
+                <QuickActionItem href="/employee/izin?type=izin" icon={FileText} label="Izin" color="text-blue-500" bgColor="bg-blue-50" />
+                <QuickActionItem href="/employee/izin?type=cuti" icon={Plane} label="Cuti" color="text-emerald-500" bgColor="bg-emerald-50" />
+                <QuickActionItem href="#" icon={UserCog} label="Ubah data" color="text-amber-500" bgColor="bg-amber-50" isComingSoon />
+              </div>
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-muted-foreground">Status Absen Hari Ini</p>
-              {todayAtt ? (
-                <div className="mt-1 flex flex-wrap items-center gap-3">
-                  <StatusBadge status={todayAtt.status as 'hadir' | 'terlambat' | 'alpha'} />
-                  <span className="text-sm text-muted-foreground">
-                    Masuk: <strong>{todayAtt.checkIn ? format(new Date(todayAtt.checkIn), 'HH:mm') : '—'}</strong>
-                  </span>
-                  <span className="text-sm text-muted-foreground">
-                    Pulang: <strong>{todayAtt.checkOut ? format(new Date(todayAtt.checkOut), 'HH:mm') : '—'}</strong>
-                  </span>
-                </div>
-              ) : (
-                <div className="mt-1 flex items-center gap-2">
-                  <span className="text-sm font-medium text-amber-600">Belum absen hari ini</span>
-                  <a href="/employee/absensi" className="text-xs text-primary hover:underline">
-                    Absen sekarang →
-                  </a>
-                </div>
-              )}
-            </div>
+          </Card>
+        </div>
+
+        {/* White Rounded Bottom Section */}
+        <div className="bg-card rounded-t-[2.5rem] min-h-[60vh] px-6 pt-8 pb-32 shadow-sm border-t">
+          <h3 className="text-sm font-semibold text-muted-foreground mb-6">Kelola data pribadimu</h3>
+          
+          <div className="grid grid-cols-4 gap-y-8 gap-x-2">
+            <GridActionItem href="#" icon={Wallet} label="Slip Gaji" color="text-teal-600" bgColor="bg-teal-50" isComingSoon />
+            <GridActionItem href="/employee/absensi" icon={Clock} label="Kehadiran" color="text-indigo-600" bgColor="bg-indigo-50" />
+            <GridActionItem href="#" icon={Users} label="Tim Saya" color="text-purple-600" bgColor="bg-purple-50" isComingSoon />
+            <GridActionItem href="#" icon={ClipboardCheck} label="Persetujuan" color="text-pink-600" bgColor="bg-pink-50" isComingSoon />
+            
+            <GridActionItem href="/employee/izin?type=cuti" icon={Plane} label="Cuti" color="text-emerald-500" bgColor="bg-emerald-50" />
+            <GridActionItem href="/employee/izin?type=sakit" icon={Stethoscope} label="Sakit" color="text-red-500" bgColor="bg-red-50" />
+            <GridActionItem href="/employee/izin?type=izin" icon={FileText} label="Izin" color="text-blue-500" bgColor="bg-blue-50" />
+            <GridActionItem href="#" icon={LayoutGrid} label="Lainnya" color="text-gray-600" bgColor="bg-gray-100" isComingSoon />
           </div>
-        </CardContent>
-      </Card>
+        </div>
 
-      {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        <SummaryCard
-          title="Hadir Bulan Ini"
-          value={monthlyAttendance}
-          description="Hari hadir bulan ini"
-          icon={CheckCircle2}
-          colorClass="text-emerald-600 bg-emerald-100"
-        />
-        <SummaryCard
-          title="Total Izin Disetujui"
-          value={approvedLeaves}
-          description="Sepanjang masa kerja"
-          icon={FileText}
-          colorClass="text-primary bg-primary/10"
-        />
-        <SummaryCard
-          title="Izin Menunggu"
-          value={recentLeaves.filter((l) => (l as { status: string }).status === 'pending').length}
-          description="Pengajuan belum diproses"
-          icon={Clock}
-          colorClass="text-amber-600 bg-amber-100"
-        />
       </div>
-
-      {/* Recent leave requests */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <FileText className="h-4 w-4 text-primary" />
-            Riwayat Pengajuan Izin
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {recentLeaves.length === 0 ? (
-            <div className="py-6 text-center text-sm text-muted-foreground">
-              Belum ada pengajuan izin.{' '}
-              <a href="/employee/izin" className="text-primary hover:underline">Ajukan sekarang</a>
-            </div>
-          ) : (
-            <div className="divide-y">
-              {recentLeaves.map((leave) => {
-                const l = leave as unknown as {
-                  _id: { toString(): string }; type: string; startDate: Date; endDate: Date; status: string
-                }
-                return (
-                  <div key={l._id.toString()} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                    <div>
-                      <p className="text-sm font-medium">{leaveTypeLabel[l.type] ?? l.type}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(new Date(l.startDate), 'dd MMM', { locale: localeId })}
-                        {' '}–{' '}
-                        {format(new Date(l.endDate), 'dd MMM yyyy', { locale: localeId })}
-                      </p>
-                    </div>
-                    <StatusBadge status={l.status as 'pending' | 'approved' | 'rejected'} />
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </div>
   )
+}
+
+function QuickActionItem({ 
+  href, 
+  icon: Icon, 
+  label, 
+  color, 
+  bgColor,
+  isComingSoon
+}: { 
+  href: string, 
+  icon: any, 
+  label: string, 
+  color: string, 
+  bgColor: string,
+  isComingSoon?: boolean
+}) {
+  const content = (
+    <div className="flex flex-col items-center justify-center gap-2 group cursor-pointer">
+      <div className={`h-12 w-12 rounded-2xl ${bgColor} flex items-center justify-center transition-transform group-hover:scale-110 group-active:scale-95 shadow-sm`}>
+        <Icon className={`h-6 w-6 ${color}`} strokeWidth={1.5} />
+      </div>
+      <span className="text-[11px] font-medium text-center text-foreground">{label}</span>
+    </div>
+  )
+
+  if (isComingSoon) {
+    return (
+      <div onClick={(e) => { e.preventDefault(); typeof window !== 'undefined' && (window as any).showComingSoonToast && (window as any).showComingSoonToast() }}>
+        {content}
+      </div>
+    )
+  }
+
+  return <Link href={href}>{content}</Link>
+}
+
+function GridActionItem({ 
+  href, 
+  icon: Icon, 
+  label, 
+  color, 
+  bgColor,
+  isComingSoon
+}: { 
+  href: string, 
+  icon: any, 
+  label: string, 
+  color: string, 
+  bgColor: string,
+  isComingSoon?: boolean
+}) {
+  const content = (
+    <div className="flex flex-col items-center justify-center gap-2 group cursor-pointer">
+      <div className={`h-14 w-14 rounded-2xl ${bgColor} flex items-center justify-center transition-transform group-hover:scale-105 group-active:scale-95 border shadow-sm`}>
+        <Icon className={`h-6 w-6 ${color}`} strokeWidth={1.5} />
+      </div>
+      <span className="text-xs font-medium text-center text-muted-foreground group-hover:text-foreground transition-colors leading-tight min-h-[2rem] flex items-center">{label}</span>
+    </div>
+  )
+
+  if (isComingSoon) {
+    return (
+      <div onClick={(e) => { e.preventDefault(); typeof window !== 'undefined' && (window as any).showComingSoonToast && (window as any).showComingSoonToast() }}>
+        {content}
+      </div>
+    )
+  }
+
+  return <Link href={href}>{content}</Link>
 }

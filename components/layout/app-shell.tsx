@@ -5,7 +5,7 @@ import { AppSidebar } from './app-sidebar'
 import { AppTopbar } from './app-topbar'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, CalendarCheck, ClipboardList, LogOut } from 'lucide-react'
+import { LayoutDashboard, CalendarCheck, ClipboardList, LogOut, Aperture, MessageSquare, User } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
@@ -23,9 +23,9 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
   const router = useRouter()
 
   const navItems = [
-    { href: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/employee/absensi', label: 'Absensi', icon: CalendarCheck },
-    { href: '/employee/izin', label: 'Izin', icon: ClipboardList },
+    { href: '/employee/dashboard', icon: Aperture },
+    { href: '#', icon: MessageSquare, isComingSoon: true },
+    { href: '#', icon: User, isComingSoon: true },
   ]
 
   async function handleLogout() {
@@ -63,34 +63,30 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
         {/* Bottom Navigation Bar */}
         <nav className="fixed bottom-0 left-0 right-0 z-50 border-t bg-card pb-[env(safe-area-inset-bottom)] shadow-lg">
           <div className="mx-auto flex h-16 max-w-md items-center justify-around px-4">
-            {navItems.map((item) => {
+            {navItems.map((item, i) => {
               const Icon = item.icon
               const isActive = pathname === item.href
               return (
                 <Link
-                  key={item.href}
+                  key={i}
                   href={item.href}
+                  onClick={(e) => {
+                    if (item.isComingSoon) {
+                      e.preventDefault()
+                      toast.info('Fitur Segera Hadir!')
+                    }
+                  }}
                   className={cn(
-                    "flex flex-col items-center justify-center gap-1 text-xs font-medium w-20 h-full transition-colors",
+                    "flex flex-col items-center justify-center w-20 h-full transition-colors",
                     isActive 
-                      ? "text-primary border-t-2 border-primary pt-0.5" 
+                      ? "text-primary" 
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
-                  <Icon className="h-5 w-5" />
-                  <span>{item.label}</span>
+                  <Icon className={cn("h-6 w-6", isActive && "text-primary fill-primary/10")} />
                 </Link>
               )
             })}
-            
-            {/* Explicit Logout Button */}
-            <button
-              onClick={handleLogout}
-              className="flex flex-col items-center justify-center gap-1 text-xs font-medium w-20 h-full transition-colors text-muted-foreground hover:text-destructive"
-            >
-              <LogOut className="h-5 w-5" />
-              <span>Keluar</span>
-            </button>
           </div>
         </nav>
       </div>
