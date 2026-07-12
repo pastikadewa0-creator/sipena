@@ -7,6 +7,8 @@ export interface IAttendance extends Document {
   checkOut: Date | null
   status: 'hadir' | 'terlambat' | 'alpha'
   documentUrl: string
+  latitude: number | null
+  longitude: number | null
   createdAt: Date
 }
 
@@ -18,6 +20,8 @@ const AttendanceSchema = new Schema<IAttendance>(
     checkOut: { type: Date, default: null },
     status: { type: String, enum: ['hadir', 'terlambat', 'alpha'], default: 'hadir' },
     documentUrl: { type: String, default: '' },
+    latitude: { type: Number, default: null },
+    longitude: { type: Number, default: null },
   },
   { timestamps: true }
 )

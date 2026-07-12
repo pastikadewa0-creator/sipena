@@ -13,6 +13,7 @@ import { LogIn, LogOut, Clock, Loader2, CalendarCheck } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
+import { Label } from '@/components/ui/label'
 
 interface AttendanceRecord {
   _id: string
@@ -38,11 +39,36 @@ export default function EmployeeAbsensiPage() {
   const [documentUrl, setDocumentUrl] = useState('')
   const [records, setRecords] = useState<AttendanceRecord[]>([])
   const [loadingHistory, setLoadingHistory] = useState(true)
+  
+  // Geolocation states
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
+  const [loadingCoords, setLoadingCoords] = useState(false)
 
   // Update clock every second
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Fetch coordinates on mount
+  useEffect(() => {
+    if ('geolocation' in navigator) {
+      setLoadingCoords(true)
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCoords({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude,
+          })
+          setLoadingCoords(false)
+        },
+        (error) => {
+          console.error('Error fetching geolocation', error)
+          setLoadingCoords(false)
+        },
+        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      )
+    }
   }, [])
 
   const fetchToday = useCallback(async () => {
@@ -87,7 +113,11 @@ export default function EmployeeAbsensiPage() {
       const res = await fetch('/api/attendance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ documentUrl }),
+        body: JSON.stringify({
+          documentUrl,
+          latitude: coords?.latitude ?? null,
+          longitude: coords?.longitude ?? null,
+        }),
       })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error)
@@ -169,6 +199,36 @@ export default function EmployeeAbsensiPage() {
           {today && (
             <div className="flex justify-center">
               <StatusBadge status={today.status} className="text-sm px-4 py-1" />
+            </div>
+          )}
+
+          {/* Geolocation Map */}
+          {!hasCheckedIn && (
+            <div className="space-y-2">
+              <Label>Lokasi Presensi Anda</Label>
+              {loadingCoords ? (
+                <Skeleton className="h-[200px] w-full rounded-lg" />
+              ) : coords ? (
+                <div className="overflow-hidden rounded-lg border border-border">
+                  <iframe
+                    width="100%"
+                    height="200"
+                    style={{ border: 0 }}
+                    loading="lazy"
+                    allowFullScreen
+                    src={`https://www.google.com/maps/embed/v1/view?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&center=${coords.latitude},${coords.longitude}&zoom=17`}
+                  />
+                  <p className="p-2 text-xs text-muted-foreground bg-muted/30 text-center font-mono">
+                    Koordinat: {coords.latitude.toFixed(6)}, {coords.longitude.toFixed(6)}
+                  </p>
+                </div>
+              ) : (
+                <div className="flex h-[100px] items-center justify-center rounded-lg border border-dashed text-center p-4">
+                  <p className="text-xs text-muted-foreground">
+                    Gagal memuat lokasi. Pastikan izin akses lokasi browser Anda diaktifkan untuk akurasi data presensi.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

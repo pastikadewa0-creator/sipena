@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatusBadge } from '@/components/ui/status-badge'
-import { CalendarCheck, Search, RefreshCw } from 'lucide-react'
+import { CalendarCheck, Search, RefreshCw, MapPin } from 'lucide-react'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { toast } from 'sonner'
@@ -21,6 +21,8 @@ interface AttendanceRecord {
   checkIn: string | null
   checkOut: string | null
   status: 'hadir' | 'terlambat' | 'alpha'
+  latitude?: number | null
+  longitude?: number | null
 }
 
 export default function AdminAbsensiPage() {
@@ -119,20 +121,21 @@ export default function AdminAbsensiPage() {
               <TableHead>Jam Masuk</TableHead>
               <TableHead>Jam Pulang</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead>Lokasi</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 5 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : records.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
                   <CalendarCheck className="mx-auto mb-2 h-8 w-8 opacity-30" />
                   Tidak ada data absensi
                 </TableCell>
@@ -150,6 +153,20 @@ export default function AdminAbsensiPage() {
                   <TableCell className="font-mono text-sm">{formatTime(rec.checkIn)}</TableCell>
                   <TableCell className="font-mono text-sm">{formatTime(rec.checkOut)}</TableCell>
                   <TableCell><StatusBadge status={rec.status} /></TableCell>
+                  <TableCell>
+                    {rec.latitude && rec.longitude ? (
+                      <a
+                        href={`https://www.google.com/maps/search/?api=1&query=${rec.latitude},${rec.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
+                      >
+                        <MapPin className="h-3 w-3" /> Lihat Map
+                      </a>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
                 </TableRow>
               ))
             )}

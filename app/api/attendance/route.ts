@@ -94,6 +94,8 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => ({}))
   const documentUrl = body.documentUrl || ''
+  const latitude = typeof body.latitude === 'number' ? body.latitude : null
+  const longitude = typeof body.longitude === 'number' ? body.longitude : null
 
   const status = isLate(now) ? 'terlambat' : 'hadir'
 
@@ -104,6 +106,8 @@ export async function POST(req: NextRequest) {
     checkOut: null,
     status,
     documentUrl,
+    latitude,
+    longitude,
   })
 
   return NextResponse.json(attendance, { status: 201 })
