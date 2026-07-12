@@ -9,6 +9,15 @@ import { LayoutDashboard, CalendarCheck, ClipboardList, LogOut, Aperture, Messag
 import { cn } from '@/lib/utils'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import useSWR from 'swr'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -24,9 +33,15 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
 
   const navItems = [
     { href: '/employee/dashboard', icon: Aperture },
-    { href: '#', icon: MessageSquare, isComingSoon: true },
-    { href: '#', icon: User, isComingSoon: true },
+    { href: '/employee/absensi', icon: CalendarCheck },
+    { href: '#', icon: User, isProfile: true },
   ]
+
+  const { data: userProfile, isLoading: profileLoading } = useSWR(
+    role === 'karyawan' ? '/api/users/me' : null,
+    (url: string) => fetch(url).then(r => r.json())
+  )
+  const [profileOpen, setProfileOpen] = useState(false)
 
   async function handleLogout() {
     try {
@@ -71,7 +86,10 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
                   key={i}
                   href={item.href}
                   onClick={(e) => {
-                    if (item.isComingSoon) {
+                    if (item.isProfile) {
+                      e.preventDefault()
+                      setProfileOpen(true)
+                    } else if (item.isComingSoon) {
                       e.preventDefault()
                       toast.info('Fitur Segera Hadir!')
                     }
@@ -89,6 +107,70 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
             })}
           </div>
         </nav>
+
+        {/* Profile Dialog */}
+        <Dialog open={profileOpen} onOpenChange={setProfileOpen}>
+          <DialogContent className="sm:max-w-sm rounded-xl p-0 overflow-hidden mx-auto w-[90vw]">
+            <DialogHeader className="p-6 pb-4 border-b bg-muted/30">
+              <DialogTitle className="text-center">Profil Saya</DialogTitle>
+            </DialogHeader>
+            {profileLoading ? (
+               <div className="p-8 text-center text-sm text-muted-foreground">Memuat profil...</div>
+            ) : userProfile ? (
+               <div className="flex flex-col items-center gap-3 p-6">
+                 <Avatar className="h-24 w-24 border-4 border-primary/20">
+                   {userProfile.photoUrl ? (
+                     <img src={userProfile.photoUrl} alt={userProfile.name} className="object-cover w-full h-full" />
+                   ) : (
+                     <AvatarFallback className="bg-primary text-primary-foreground text-3xl font-bold">
+                       {userProfile.name.charAt(0).toUpperCase()}
+                     </AvatarFallback>
+                   )}
+                 </Avatar>
+                 <div className="text-center w-full space-y-1 mt-2">
+                   <p className="font-bold text-lg">{userProfile.name}</p>
+                   <p className="text-sm text-muted-foreground font-mono mb-4">@{userProfile.username}</p>
+                   
+                   <div className="flex flex-col gap-2 mt-4 bg-muted/40 p-4 rounded-xl border text-sm text-left">
+                     <div className="flex justify-between border-b pb-2">
+                       <span className="text-muted-foreground">Jabatan</span>
+                       <span className="font-medium">{userProfile.position || '-'}</span>
+                     </div>
+                     <div className="flex justify-between border-b pb-2 pt-1">
+                       <span className="text-muted-foreground">Email</span>
+                       <span className="font-medium truncate max-w-[150px]" title={userProfile.email}>{userProfile.email}</span>
+                     </div>
+                     <div className="flex justify-between pt-1">
+                       <span className="text-muted-foreground">Status</span>
+                       <span className="font-medium text-emerald-600">
+                         {userProfile.isActive ? 'Aktif' : 'Nonaktif'}
+                       </span>
+                     </div>
+                   </div>
+
+                   {userProfile.documentUrl && (
+                     <a href={userProfile.documentUrl} target="_blank" rel="noreferrer" className="text-sm text-primary hover:underline block mt-4 font-medium">
+                       Lihat Dokumen Kontrak
+                     </a>
+                   )}
+                 </div>
+                 <Button 
+                   variant="destructive" 
+                   className="w-full mt-4 rounded-xl"
+                   onClick={() => {
+                     setProfileOpen(false)
+                     handleLogout()
+                   }}
+                 >
+                   <LogOut className="mr-2 h-4 w-4" /> Keluar Akun
+                 </Button>
+               </div>
+            ) : (
+               <div className="p-8 text-center text-sm text-destructive">Gagal memuat profil</div>
+            )}
+          </DialogContent>
+        </Dialog>
+
       </div>
     )
   }
