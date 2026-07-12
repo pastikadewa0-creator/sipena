@@ -6,19 +6,34 @@ import { getSession } from '@/lib/session'
 const WORK_START_HOUR = 8
 const WORK_START_MINUTE = 0
 
+function getJakartaDateString(date: Date): string {
+  // Returns YYYY-MM-DD in Asia/Jakarta
+  const f = new Intl.DateTimeFormat('en-CA', { 
+    timeZone: 'Asia/Jakarta', 
+    year: 'numeric', month: '2-digit', day: '2-digit' 
+  })
+  return f.format(date)
+}
+
+function getJakartaDate(date: Date): Date {
+  const dateString = getJakartaDateString(date)
+  return new Date(`${dateString}T00:00:00.000Z`)
+}
+
 function isLate(checkInTime: Date): boolean {
-  const hours = checkInTime.getHours()
-  const minutes = checkInTime.getMinutes()
+  const f = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Jakarta',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  })
+  const timeString = f.format(checkInTime) // "08:30"
+  const [hoursStr, minutesStr] = timeString.split(':')
+  const hours = parseInt(hoursStr, 10)
+  const minutes = parseInt(minutesStr, 10)
+  
   return (
     hours > WORK_START_HOUR ||
     (hours === WORK_START_HOUR && minutes > WORK_START_MINUTE)
   )
-}
-
-function getDateOnly(date: Date): Date {
-  const d = new Date(date)
-  d.setHours(0, 0, 0, 0)
-  return d
 }
 
 export async function GET(req: NextRequest) {
@@ -79,7 +94,7 @@ export async function POST(req: NextRequest) {
   await connectDB()
 
   const now = new Date()
-  const today = getDateOnly(now)
+  const today = getJakartaDate(now)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 
@@ -121,7 +136,7 @@ export async function PATCH() {
 
   await connectDB()
 
-  const today = getDateOnly(new Date())
+  const today = getJakartaDate(new Date())
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 

@@ -29,8 +29,8 @@ export async function GET() {
   }
 
   // Karyawan dashboard
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
+  const today = new Date(`${todayStr}T00:00:00.000Z`)
   const tomorrow = new Date(today)
   tomorrow.setDate(tomorrow.getDate() + 1)
 

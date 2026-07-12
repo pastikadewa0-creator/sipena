@@ -82,9 +82,9 @@ export default function EmployeeAbsensiPage() {
       const res = await fetch('/api/attendance?limit=1')
       const data = await res.json()
       // Find today's attendance
-      const todayStr = new Date().toDateString()
+      const todayStr = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Jakarta' }).format(new Date())
       const todayRec = (data.data || []).find(
-        (r: AttendanceRecord) => new Date(r.date).toDateString() === todayStr
+        (r: AttendanceRecord) => r.date && r.date.startsWith(todayStr)
       )
       setToday(todayRec ?? null)
     } catch {
