@@ -113,7 +113,7 @@ export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, o
           </Button>
         )}
         <div>
-          <h1 className="text-lg font-semibold">{isEmployeeDashboard ? 'Gajianku' : title}</h1>
+          <h1 className="text-lg font-semibold">{isEmployeeDashboard ? 'SIPENA' : title}</h1>
           <p className={cn("hidden text-xs sm:block", isEmployeeDashboard ? "text-primary-foreground/80" : "text-muted-foreground")}>
             {new Date().toLocaleDateString('id-ID', {
               weekday: 'long',
