@@ -12,6 +12,8 @@ const CreateUserSchema = z.object({
   email: z.string().email('Email tidak valid'),
   position: z.string().optional().default(''),
   role: z.enum(['admin', 'karyawan']).default('karyawan'),
+  photoUrl: z.string().optional().default(''),
+  documentUrl: z.string().optional().default(''),
 })
 
 export async function GET(req: NextRequest) {
@@ -62,7 +64,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 })
   }
 
-  const { username, password, name, email, position, role } = parsed.data
+  const { username, password, name, email, position, role, photoUrl, documentUrl } = parsed.data
 
   const existing = await User.findOne({ username })
   if (existing) {
@@ -77,6 +79,8 @@ export async function POST(req: NextRequest) {
     email,
     position,
     role,
+    photoUrl,
+    documentUrl,
     isActive: true,
   })
 

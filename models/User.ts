@@ -8,6 +8,8 @@ export interface IUser extends Document {
   email: string
   position: string
   isActive: boolean
+  photoUrl: string
+  documentUrl: string
   createdAt: Date
   updatedAt: Date
 }
@@ -21,6 +23,8 @@ const UserSchema = new Schema<IUser>(
     email: { type: String, required: true, trim: true, lowercase: true },
     position: { type: String, default: '' },
     isActive: { type: Boolean, default: true },
+    photoUrl: { type: String, default: '' },
+    documentUrl: { type: String, default: '' },
   },
   { timestamps: true }
 )

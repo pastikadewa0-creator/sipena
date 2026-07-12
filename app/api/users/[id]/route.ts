@@ -23,6 +23,8 @@ export async function PATCH(
   if (body.email) updateData.email = body.email
   if (body.position !== undefined) updateData.position = body.position
   if (body.isActive !== undefined) updateData.isActive = body.isActive
+  if (body.photoUrl !== undefined) updateData.photoUrl = body.photoUrl
+  if (body.documentUrl !== undefined) updateData.documentUrl = body.documentUrl
   if (body.password) {
     updateData.password = await bcrypt.hash(body.password, 12)
   }

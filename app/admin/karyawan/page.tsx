@@ -25,6 +25,8 @@ interface Employee {
   position: string
   isActive: boolean
   createdAt: string
+  photoUrl?: string
+  documentUrl?: string
 }
 
 interface FormState {
@@ -33,9 +35,11 @@ interface FormState {
   name: string
   email: string
   position: string
+  photoUrl: string
+  documentUrl: string
 }
 
-const emptyForm: FormState = { username: '', password: '', name: '', email: '', position: '' }
+const emptyForm: FormState = { username: '', password: '', name: '', email: '', position: '', photoUrl: '', documentUrl: '' }
 
 export default function KaryawanPage() {
   const [employees, setEmployees] = useState<Employee[]>([])
@@ -45,6 +49,39 @@ export default function KaryawanPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [form, setForm] = useState<FormState>(emptyForm)
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
+  const [uploadingDoc, setUploadingDoc] = useState(false)
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, type: 'photo' | 'doc') => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    try {
+      if (type === 'photo') setUploadingPhoto(true)
+      else setUploadingDoc(true)
+
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error)
+      
+      if (type === 'photo') setForm(prev => ({ ...prev, photoUrl: data.url }))
+      else setForm(prev => ({ ...prev, documentUrl: data.url }))
+      
+      toast.success('File berhasil diunggah')
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Gagal mengunggah file')
+    } finally {
+      if (type === 'photo') setUploadingPhoto(false)
+      else setUploadingDoc(false)
+    }
+  }
 
   const fetchEmployees = useCallback(async (q = '') => {
     setLoading(true)
@@ -176,10 +213,21 @@ export default function KaryawanPage() {
                 <TableRow key={emp._id} className="hover:bg-muted/30">
                   <TableCell>
                     <div className="flex items-center gap-2.5">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
-                        {emp.name.charAt(0)}
+                      {emp.photoUrl ? (
+                        <img src={emp.photoUrl} alt={emp.name} className="h-8 w-8 rounded-full object-cover" />
+                      ) : (
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-semibold text-primary">
+                          {emp.name.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">{emp.name}</span>
+                        {emp.documentUrl && (
+                          <a href={emp.documentUrl} target="_blank" rel="noreferrer" className="text-[10px] text-blue-500 hover:underline">
+                            Lihat Dokumen
+                          </a>
+                        )}
                       </div>
-                      <span className="font-medium text-sm">{emp.name}</span>
                     </div>
                   </TableCell>
                   <TableCell className="font-mono text-sm text-muted-foreground">
@@ -233,7 +281,7 @@ export default function KaryawanPage() {
 
       {/* Add Employee Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Tambah Karyawan Baru</DialogTitle>
           </DialogHeader>
@@ -259,6 +307,18 @@ export default function KaryawanPage() {
             <div className="space-y-1.5">
               <Label htmlFor="emp-position">Jabatan</Label>
               <Input id="emp-position" value={form.position} onChange={(e) => setForm({ ...form, position: e.target.value })} placeholder="Staff IT" />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="emp-photo">Foto Karyawan (Opsional)</Label>
+              <Input id="emp-photo" type="file" accept="image/jpeg,image/png" onChange={(e) => handleFileUpload(e, 'photo')} disabled={uploadingPhoto} />
+              {uploadingPhoto && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Mengunggah...</p>}
+              {form.photoUrl && !uploadingPhoto && <p className="text-xs text-emerald-600">✓ Foto berhasil diunggah</p>}
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="emp-doc">Dokumen / Kontrak (Opsional)</Label>
+              <Input id="emp-doc" type="file" accept="application/pdf,image/jpeg,image/png" onChange={(e) => handleFileUpload(e, 'doc')} disabled={uploadingDoc} />
+              {uploadingDoc && <p className="text-xs text-muted-foreground flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Mengunggah...</p>}
+              {form.documentUrl && !uploadingDoc && <p className="text-xs text-emerald-600">✓ Dokumen berhasil diunggah</p>}
             </div>
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>Batal</Button>

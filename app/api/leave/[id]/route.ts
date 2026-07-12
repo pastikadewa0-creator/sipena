@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import LeaveRequest from '@/models/LeaveRequest'
+import Notification from '@/models/Notification'
 import { getSession } from '@/lib/session'
 import mongoose from 'mongoose'
 
@@ -56,6 +57,16 @@ export async function PATCH(
   leave.reviewedBy = new mongoose.Types.ObjectId(session.userId)
   leave.reviewedAt = new Date()
   await leave.save()
+
+  // Create notification for the employee
+  const typeText = leave.type.replace('_', ' ')
+  const statusText = status === 'approved' ? 'disetujui' : 'ditolak'
+  
+  await Notification.create({
+    userId: leave.userId,
+    title: `Pengajuan ${typeText} ${statusText}`,
+    message: `Pengajuan ${typeText} Anda dari tanggal ${leave.startDate.toLocaleDateString('id-ID')} hingga ${leave.endDate.toLocaleDateString('id-ID')} telah ${statusText} oleh Admin.`,
+  })
 
   return NextResponse.json(leave)
 }
