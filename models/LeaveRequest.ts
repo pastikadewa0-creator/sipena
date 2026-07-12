@@ -29,6 +29,9 @@ const LeaveRequestSchema = new Schema<ILeaveRequest>(
   { timestamps: true }
 )
 
+LeaveRequestSchema.index({ status: 1, createdAt: -1 })
+LeaveRequestSchema.index({ userId: 1, createdAt: -1 })
+LeaveRequestSchema.index({ createdAt: -1 })
 LeaveRequestSchema.index({ status: 1 })
 LeaveRequestSchema.index({ userId: 1 })
 

@@ -28,6 +28,8 @@ const AttendanceSchema = new Schema<IAttendance>(
 
 // Compound unique index: satu absensi per user per hari
 AttendanceSchema.index({ userId: 1, date: 1 }, { unique: true })
+AttendanceSchema.index({ date: -1 })
+AttendanceSchema.index({ userId: 1, date: -1 })
 
 const Attendance: Model<IAttendance> =
   mongoose.models.Attendance || mongoose.model<IAttendance>('Attendance', AttendanceSchema)
