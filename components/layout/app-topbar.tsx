@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { Bell, Menu } from 'lucide-react'
+import Link from 'next/link'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -77,14 +78,16 @@ export function AppTopbar({ name, role, pendingCount = 0, onMenuToggle }: AppTop
       <div className="flex items-center gap-2">
         {/* Notification bell (admin only) */}
         {role === 'admin' && (
-          <Button variant="ghost" size="icon" className="relative" aria-label="Notifikasi">
-            <Bell className="h-5 w-5" />
-            {pendingCount > 0 && (
-              <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
-                {pendingCount > 9 ? '9+' : pendingCount}
-              </span>
-            )}
-          </Button>
+          <Link href="/admin/izin" passHref legacyBehavior>
+            <Button variant="ghost" size="icon" className="relative" aria-label="Notifikasi">
+              <Bell className="h-5 w-5" />
+              {pendingCount > 0 && (
+                <span className="absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-white">
+                  {pendingCount > 9 ? '9+' : pendingCount}
+                </span>
+              )}
+            </Button>
+          </Link>
         )}
 
         {/* User dropdown */}
