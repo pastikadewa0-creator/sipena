@@ -63,7 +63,7 @@ export function AppSidebar({ role, name }: AppSidebarProps) {
           <Building2 className="h-5 w-5 text-primary-foreground" />
         </div>
         <div>
-          <p className="text-sm font-bold text-sidebar-foreground">HR Pro</p>
+          <p className="text-sm font-bold text-sidebar-foreground">SIPENA</p>
           <p className="text-xs text-sidebar-foreground/50">Sistem Absensi</p>
         </div>
       </div>

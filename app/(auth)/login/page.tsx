@@ -59,7 +59,7 @@ export default function LoginPage() {
           </div>
         </div>
         <div>
-          <CardTitle className="text-2xl font-bold">HR Pro</CardTitle>
+          <CardTitle className="text-2xl font-bold">SIPENA</CardTitle>
           <CardDescription className="text-sm mt-1">
             Sistem Manajemen Absensi Karyawan
           </CardDescription>

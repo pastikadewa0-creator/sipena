@@ -11,7 +11,7 @@ import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 
 export const metadata: Metadata = {
-  title: 'Dashboard — HR Pro',
+  title: 'Dashboard — SIPENA',
   description: 'Ringkasan absensi dan izin Anda',
 }
 

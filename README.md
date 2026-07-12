@@ -1,6 +1,6 @@
-# HR Pro — Sistem Absensi Karyawan
+# SIPENA — Sistem Absensi Karyawan
 
-Sistem manajemen absensi dan pengajuan izin karyawan berbasis web yang dibangun dengan Next.js 16, MongoDB, dan shadcn/ui.
+Sistem Informasi Penilaian & Absensi (SIPENA) Karyawan berbasis web yang dibangun dengan Next.js 16, MongoDB, dan shadcn/ui.
 
 ## 🚀 Fitur
 
@@ -66,7 +66,7 @@ Buka [http://localhost:3000](http://localhost:3000)
 ## 📁 Struktur Project
 
 ```
-hr-pro/
+sipena/
 ├── app/
 │   ├── (auth)/login/          # Login page
 │   ├── (admin)/               # Admin dashboard & pages

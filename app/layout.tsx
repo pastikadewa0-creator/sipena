@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'HR Pro — Sistem Absensi Karyawan',
+  title: 'SIPENA — Sistem Absensi Karyawan',
   description:
     'Sistem manajemen absensi dan pengajuan izin karyawan berbasis web yang modern dan efisien.',
 }

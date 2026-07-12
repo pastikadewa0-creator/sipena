@@ -35,7 +35,7 @@ interface AppTopbarProps {
 export function AppTopbar({ name, role, pendingCount = 0, onMenuToggle }: AppTopbarProps) {
   const pathname = usePathname()
   const router = useRouter()
-  const title = pageTitles[pathname] || 'HR Pro'
+  const title = pageTitles[pathname] || 'SIPENA'
 
   async function handleLogout() {
     try {

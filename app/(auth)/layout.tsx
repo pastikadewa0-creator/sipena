@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Login — HR Pro',
-  description: 'Masuk ke sistem absensi HR Pro',
+  title: 'Login — SIPENA',
+  description: 'Masuk ke sistem absensi SIPENA',
 }
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
