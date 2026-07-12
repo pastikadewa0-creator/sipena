@@ -50,15 +50,17 @@ export function AppTopbar({ name, role, pendingCount = 0, onMenuToggle }: AppTop
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
       <div className="flex items-center gap-3">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="md:hidden"
-          onClick={onMenuToggle}
-          aria-label="Toggle menu"
-        >
-          <Menu className="h-5 w-5" />
-        </Button>
+        {role === 'admin' && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={onMenuToggle}
+            aria-label="Toggle menu"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        )}
         <div>
           <h1 className="text-lg font-semibold text-foreground">{title}</h1>
           <p className="hidden text-xs text-muted-foreground sm:block">
