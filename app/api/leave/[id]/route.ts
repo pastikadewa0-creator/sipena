@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import LeaveRequest from '@/models/LeaveRequest'
+import User from '@/models/User'
 import Notification from '@/models/Notification'
 import { getSession } from '@/lib/session'
 import mongoose from 'mongoose'
