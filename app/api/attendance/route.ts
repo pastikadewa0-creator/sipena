@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import Attendance from '@/models/Attendance'
+import User from '@/models/User' // MUST import to register schema for populate
 import { getSession } from '@/lib/session'
 
 const WORK_START_HOUR = 8
