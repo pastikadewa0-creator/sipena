@@ -14,6 +14,7 @@ import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
 import { Label } from '@/components/ui/label'
+import { getDistanceFromLatLonInM } from '@/lib/geo'
 
 interface AttendanceRecord {
   _id: string
@@ -43,11 +44,37 @@ export default function EmployeeAbsensiPage() {
   // Geolocation states
   const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(null)
   const [loadingCoords, setLoadingCoords] = useState(false)
+  const [locationDenied, setLocationDenied] = useState(false)
+
+  // Settings states
+  const [locationEnabled, setLocationEnabled] = useState(false)
+  const [targetCoords, setTargetCoords] = useState<{ lat: number, lng: number } | null>(null)
+  const [maxRadius, setMaxRadius] = useState(50)
+  const [distance, setDistance] = useState<number | null>(null)
+  const [loadingSettings, setLoadingSettings] = useState(true)
 
   // Update clock every second
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000)
     return () => clearInterval(interval)
+  }, [])
+
+  // Fetch settings
+  useEffect(() => {
+    fetch('/api/settings')
+      .then(res => res.json())
+      .then(data => {
+        setLocationEnabled(data.attendanceLocationEnabled === 'true')
+        if (data.attendanceLocationLat && data.attendanceLocationLng) {
+          setTargetCoords({
+            lat: parseFloat(data.attendanceLocationLat),
+            lng: parseFloat(data.attendanceLocationLng)
+          })
+        }
+        setMaxRadius(parseFloat(data.attendanceRadius || '50'))
+        setLoadingSettings(false)
+      })
+      .catch(() => setLoadingSettings(false))
   }, [])
 
   // Fetch coordinates on mount
@@ -61,20 +88,25 @@ export default function EmployeeAbsensiPage() {
             longitude: position.coords.longitude,
           })
           setLoadingCoords(false)
+          setLocationDenied(false)
         },
         (error) => {
           console.error('Error fetching geolocation', error)
-          // Fallback location if permission denied (Jakarta)
-          setCoords({ latitude: -6.200000, longitude: 106.816666 })
+          setLocationDenied(true)
           setLoadingCoords(false)
-          toast.warning('Akses lokasi ditolak atau tidak tersedia', {
-            description: 'Menampilkan lokasi default. Harap izinkan akses lokasi di pengaturan browser (ikon gembok di URL) lalu refresh halaman.'
-          })
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
       )
     }
   }, [])
+
+  // Calculate distance
+  useEffect(() => {
+    if (coords && targetCoords) {
+      const dist = getDistanceFromLatLonInM(coords.latitude, coords.longitude, targetCoords.lat, targetCoords.lng)
+      setDistance(dist)
+    }
+  }, [coords, targetCoords])
 
   const fetchToday = useCallback(async () => {
     setLoadingToday(true)
@@ -207,11 +239,11 @@ export default function EmployeeAbsensiPage() {
             </div>
           )}
 
-          {/* Geolocation Map */}
-          {!hasCheckedIn && (
+          {/* Geolocation Map & Warning */}
+          {(!hasCheckedIn || !hasCheckedOut) && (
             <div className="space-y-2">
               <Label>Lokasi Presensi Anda</Label>
-              {loadingCoords ? (
+              {loadingCoords || loadingSettings ? (
                 <Skeleton className="h-[200px] w-full rounded-lg" />
               ) : coords ? (
                 <div className="overflow-hidden rounded-lg border border-border">
@@ -223,14 +255,21 @@ export default function EmployeeAbsensiPage() {
                     allowFullScreen
                     src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.longitude - 0.002},${coords.latitude - 0.0015},${coords.longitude + 0.002},${coords.latitude + 0.0015}&layer=mapnik&marker=${coords.latitude},${coords.longitude}`}
                   />
-                  <p className="p-2 text-xs text-muted-foreground bg-muted/30 text-center font-mono">
-                    Koordinat: {coords.latitude.toFixed(6)}, {coords.longitude.toFixed(6)}
-                  </p>
+                  <div className="p-3 text-xs flex flex-col gap-1 bg-muted/30">
+                    <p className="text-muted-foreground font-mono">
+                      Koordinat: {coords.latitude.toFixed(6)}, {coords.longitude.toFixed(6)}
+                    </p>
+                    {locationEnabled && distance !== null && (
+                      <p className={distance > maxRadius ? "text-destructive font-medium" : "text-success font-medium"}>
+                        Jarak dari titik absensi: {Math.round(distance)} meter (Maks: {maxRadius}m)
+                      </p>
+                    )}
+                  </div>
                 </div>
               ) : (
-                <div className="flex h-[100px] items-center justify-center rounded-lg border border-dashed text-center p-4">
-                  <p className="text-xs text-muted-foreground">
-                    Gagal memuat lokasi. Pastikan izin akses lokasi browser Anda diaktifkan untuk akurasi data presensi.
+                <div className="flex h-[100px] items-center justify-center rounded-lg border border-dashed border-destructive/50 bg-destructive/5 text-center p-4">
+                  <p className="text-sm text-destructive">
+                    Akses lokasi wajib diizinkan untuk absensi. Silakan periksa pengaturan browser Anda.
                   </p>
                 </div>
               )}
@@ -251,7 +290,7 @@ export default function EmployeeAbsensiPage() {
             <Button
               className="flex-1 h-12 text-base"
               onClick={handleCheckIn}
-              disabled={hasCheckedIn || checkingIn || loadingToday}
+              disabled={hasCheckedIn || checkingIn || loadingToday || loadingSettings || (locationEnabled && (locationDenied || (distance !== null && distance > maxRadius)))}
               id="check-in-btn"
             >
               {checkingIn ? (
@@ -265,7 +304,7 @@ export default function EmployeeAbsensiPage() {
               variant="outline"
               className="flex-1 h-12 text-base"
               onClick={handleCheckOut}
-              disabled={!hasCheckedIn || hasCheckedOut || checkingOut || loadingToday}
+              disabled={!hasCheckedIn || hasCheckedOut || checkingOut || loadingToday || loadingSettings || (locationEnabled && (locationDenied || (distance !== null && distance > maxRadius)))}
               id="check-out-btn"
             >
               {checkingOut ? (

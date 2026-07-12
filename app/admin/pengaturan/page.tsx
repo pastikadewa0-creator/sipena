@@ -6,15 +6,24 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { Upload, Loader2, Save, Building2, ImageIcon } from 'lucide-react'
+import { Upload, Loader2, Save, Building2, ImageIcon, MapPin } from 'lucide-react'
 import Image from 'next/image'
+import { Switch } from '@/components/ui/switch'
 
 export default function SettingsPage() {
   const [siteName, setSiteName] = useState('')
   const [logoUrl, setLogoUrl] = useState('')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingLocation, setSavingLocation] = useState(false)
   const [uploading, setUploading] = useState(false)
+  
+  // Location settings
+  const [attendanceLocationEnabled, setAttendanceLocationEnabled] = useState(false)
+  const [attendanceLocationLat, setAttendanceLocationLat] = useState('')
+  const [attendanceLocationLng, setAttendanceLocationLng] = useState('')
+  const [attendanceRadius, setAttendanceRadius] = useState('50')
+  
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -23,6 +32,10 @@ export default function SettingsPage() {
       .then((data) => {
         setSiteName(data.siteName || 'SIPENA')
         setLogoUrl(data.siteLogo || '')
+        setAttendanceLocationEnabled(data.attendanceLocationEnabled === 'true')
+        setAttendanceLocationLat(data.attendanceLocationLat || '')
+        setAttendanceLocationLng(data.attendanceLocationLng || '')
+        setAttendanceRadius(data.attendanceRadius || '50')
         setLoading(false)
       })
       .catch(() => {
@@ -91,6 +104,33 @@ export default function SettingsPage() {
       toast.error('Terjadi kesalahan saat menyimpan pengaturan')
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleSaveLocation = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setSavingLocation(true)
+    try {
+      const updates = [
+        { key: 'attendanceLocationEnabled', value: attendanceLocationEnabled ? 'true' : 'false' },
+        { key: 'attendanceLocationLat', value: attendanceLocationLat },
+        { key: 'attendanceLocationLng', value: attendanceLocationLng },
+        { key: 'attendanceRadius', value: attendanceRadius }
+      ]
+
+      for (const update of updates) {
+        await fetch('/api/settings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(update),
+        })
+      }
+
+      toast.success('Pengaturan lokasi absensi berhasil disimpan')
+    } catch (error) {
+      toast.error('Terjadi kesalahan saat menyimpan pengaturan lokasi')
+    } finally {
+      setSavingLocation(false)
     }
   }
 
@@ -190,6 +230,87 @@ export default function SettingsPage() {
                   <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menyimpan...</>
                 ) : (
                   <><Save className="mr-2 h-4 w-4" /> Simpan Nama</>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        {/* Location Settings */}
+        <Card className="border-none shadow-xl bg-white/50 backdrop-blur">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-primary" />
+              Lokasi Absensi
+            </CardTitle>
+            <CardDescription>
+              Batasi karyawan agar hanya bisa absensi di sekitar koordinat tertentu.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSaveLocation} className="space-y-4">
+              <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <Label className="text-base">Pembatasan Lokasi Aktif</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Jika aktif, karyawan wajib memberikan akses GPS dan berada dalam radius.
+                  </p>
+                </div>
+                <Switch 
+                  checked={attendanceLocationEnabled} 
+                  onCheckedChange={setAttendanceLocationEnabled} 
+                />
+              </div>
+
+              {attendanceLocationEnabled && (
+                <div className="space-y-4 pt-4 border-t">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="lat">Latitude</Label>
+                      <Input
+                        id="lat"
+                        placeholder="-6.200000"
+                        value={attendanceLocationLat}
+                        onChange={(e) => setAttendanceLocationLat(e.target.value)}
+                        required={attendanceLocationEnabled}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="lng">Longitude</Label>
+                      <Input
+                        id="lng"
+                        placeholder="106.816666"
+                        value={attendanceLocationLng}
+                        onChange={(e) => setAttendanceLocationLng(e.target.value)}
+                        required={attendanceLocationEnabled}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="radius">Radius Absensi (Meter)</Label>
+                    <Input
+                      id="radius"
+                      type="number"
+                      min="10"
+                      placeholder="50"
+                      value={attendanceRadius}
+                      onChange={(e) => setAttendanceRadius(e.target.value)}
+                      required={attendanceLocationEnabled}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Disarankan minimal 50 meter untuk mengakomodasi inakurasi GPS HP.
+                    </p>
+                  </div>
+                </div>
+              )}
+              
+              <Button type="submit" disabled={savingLocation}>
+                {savingLocation ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Menyimpan...</>
+                ) : (
+                  <><Save className="mr-2 h-4 w-4" /> Simpan Pengaturan Lokasi</>
                 )}
               </Button>
             </form>

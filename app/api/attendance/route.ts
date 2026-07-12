@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { connectDB } from '@/lib/db'
 import Attendance from '@/models/Attendance'
 import User from '@/models/User' // MUST import to register schema for populate
+import Setting from '@/models/Setting'
 import { getSession } from '@/lib/session'
+import { getDistanceFromLatLonInM } from '@/lib/geo'
 
 const WORK_START_HOUR = 8
 const WORK_START_MINUTE = 0
@@ -113,6 +115,24 @@ export async function POST(req: NextRequest) {
   const latitude = typeof body.latitude === 'number' ? body.latitude : null
   const longitude = typeof body.longitude === 'number' ? body.longitude : null
 
+  // Validate Location if enabled
+  const settings = await Setting.find({ key: { $in: ['attendanceLocationEnabled', 'attendanceLocationLat', 'attendanceLocationLng', 'attendanceRadius'] } }).lean()
+  const settingsMap = Object.fromEntries(settings.map(s => [s.key, s.value]))
+  
+  if (settingsMap.attendanceLocationEnabled === 'true') {
+    if (latitude === null || longitude === null) {
+      return NextResponse.json({ error: 'Akses lokasi wajib diizinkan' }, { status: 400 })
+    }
+    const targetLat = parseFloat(settingsMap.attendanceLocationLat || '0')
+    const targetLng = parseFloat(settingsMap.attendanceLocationLng || '0')
+    const radius = parseFloat(settingsMap.attendanceRadius || '50')
+    const distance = getDistanceFromLatLonInM(latitude, longitude, targetLat, targetLng)
+    
+    if (distance > radius) {
+      return NextResponse.json({ error: `Di luar jangkauan absensi (Jarak: ${Math.round(distance)}m / ${radius}m)` }, { status: 400 })
+    }
+  }
+
   const status = isLate(now) ? 'terlambat' : 'hadir'
 
   const attendance = await Attendance.create({
@@ -129,7 +149,7 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(attendance, { status: 201 })
 }
 
-export async function PATCH() {
+export async function PATCH(req: NextRequest) {
   const session = await getSession()
   if (!session?.userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -158,6 +178,28 @@ export async function PATCH() {
       { error: 'Sudah melakukan absen pulang hari ini' },
       { status: 400 }
     )
+  }
+
+  const body = await req.json().catch(() => ({}))
+  const latitude = typeof body.latitude === 'number' ? body.latitude : null
+  const longitude = typeof body.longitude === 'number' ? body.longitude : null
+
+  // Validate Location if enabled
+  const settings = await Setting.find({ key: { $in: ['attendanceLocationEnabled', 'attendanceLocationLat', 'attendanceLocationLng', 'attendanceRadius'] } }).lean()
+  const settingsMap = Object.fromEntries(settings.map(s => [s.key, s.value]))
+  
+  if (settingsMap.attendanceLocationEnabled === 'true') {
+    if (latitude === null || longitude === null) {
+      return NextResponse.json({ error: 'Akses lokasi wajib diizinkan' }, { status: 400 })
+    }
+    const targetLat = parseFloat(settingsMap.attendanceLocationLat || '0')
+    const targetLng = parseFloat(settingsMap.attendanceLocationLng || '0')
+    const radius = parseFloat(settingsMap.attendanceRadius || '50')
+    const distance = getDistanceFromLatLonInM(latitude, longitude, targetLat, targetLng)
+    
+    if (distance > radius) {
+      return NextResponse.json({ error: `Di luar jangkauan absensi (Jarak: ${Math.round(distance)}m / ${radius}m)` }, { status: 400 })
+    }
   }
 
   attendance.checkOut = new Date()
