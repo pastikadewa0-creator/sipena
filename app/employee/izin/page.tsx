@@ -15,7 +15,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { StatusBadge } from '@/components/ui/status-badge'
 import { FileUploadField } from '@/components/ui/file-upload-field'
-import { Plus, FileText, Loader2 } from 'lucide-react'
+import { Plus, FileText, Loader2, ChevronRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { format } from 'date-fns'
 import { id as localeId } from 'date-fns/locale'
@@ -132,20 +132,21 @@ export default function EmployeeIzinPage() {
               <TableHead className="hidden md:table-cell">Alasan</TableHead>
               <TableHead>Dokumen</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead className="w-8"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 5 }).map((_, j) => (
+                  {Array.from({ length: 6 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : leaves.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="py-12 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
                   <FileText className="mx-auto mb-2 h-8 w-8 opacity-30" />
                   Belum ada pengajuan izin
                 </TableCell>
@@ -186,6 +187,9 @@ export default function EmployeeIzinPage() {
                     )}
                   </TableCell>
                   <TableCell><StatusBadge status={leave.status} /></TableCell>
+                  <TableCell className="text-right">
+                    <ChevronRight className="inline-block h-4 w-4 text-muted-foreground opacity-50" />
+                  </TableCell>
                 </TableRow>
               ))
             )}
