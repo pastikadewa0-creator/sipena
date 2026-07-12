@@ -283,50 +283,52 @@ export default function EmployeeAbsensiPage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="px-0 pb-0">
-          <Table>
-            <TableHeader>
-              <TableRow className="bg-muted/50">
-                <TableHead className="pl-6">Tanggal</TableHead>
-                <TableHead>Jam Masuk</TableHead>
-                <TableHead>Jam Pulang</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loadingHistory ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    {Array.from({ length: 4 }).map((_, j) => (
-                      <TableCell key={j} className={j === 0 ? 'pl-6' : ''}>
-                        <Skeleton className="h-5 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              ) : records.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
-                    Belum ada riwayat absensi
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-muted/50">
+                  <TableHead className="pl-6">Tanggal</TableHead>
+                  <TableHead>Jam Masuk</TableHead>
+                  <TableHead>Jam Pulang</TableHead>
+                  <TableHead>Status</TableHead>
                 </TableRow>
-              ) : (
-                records.map((rec) => (
-                  <TableRow key={rec._id} className="hover:bg-muted/30">
-                    <TableCell className="pl-6 text-sm">
-                      {format(new Date(rec.date), 'dd MMM yyyy', { locale: localeId })}
+              </TableHeader>
+              <TableBody>
+                {loadingHistory ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={i}>
+                      {Array.from({ length: 4 }).map((_, j) => (
+                        <TableCell key={j} className={j === 0 ? 'pl-6' : ''}>
+                          <Skeleton className="h-5 w-full" />
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))
+                ) : records.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="py-10 text-center text-muted-foreground">
+                      Belum ada riwayat absensi
                     </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {rec.checkIn ? format(new Date(rec.checkIn), 'HH:mm') : '—'}
-                    </TableCell>
-                    <TableCell className="font-mono text-sm">
-                      {rec.checkOut ? format(new Date(rec.checkOut), 'HH:mm') : '—'}
-                    </TableCell>
-                    <TableCell><StatusBadge status={rec.status} /></TableCell>
                   </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+                ) : (
+                  records.map((rec) => (
+                    <TableRow key={rec._id} className="hover:bg-muted/30">
+                      <TableCell className="pl-6 text-sm">
+                        {format(new Date(rec.date), 'dd MMM yyyy', { locale: localeId })}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {rec.checkIn ? format(new Date(rec.checkIn), 'HH:mm') : '—'}
+                      </TableCell>
+                      <TableCell className="font-mono text-sm">
+                        {rec.checkOut ? format(new Date(rec.checkOut), 'HH:mm') : '—'}
+                      </TableCell>
+                      <TableCell><StatusBadge status={rec.status} /></TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

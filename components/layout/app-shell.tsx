@@ -43,7 +43,7 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
           pendingCount={pendingCount}
           onMenuToggle={() => setSidebarOpen((prev) => !prev)}
         />
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+        <main className="flex-1 overflow-y-auto p-4 md:p-6">{children}</main>
       </div>
     </div>
   )

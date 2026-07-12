@@ -112,7 +112,7 @@ export default function AdminAbsensiPage() {
       </div>
 
       {/* Table */}
-      <div className="rounded-xl border bg-card overflow-hidden">
+      <div className="rounded-xl border bg-card overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
