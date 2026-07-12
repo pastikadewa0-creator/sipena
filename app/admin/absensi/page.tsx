@@ -23,6 +23,7 @@ interface AttendanceRecord {
   status: 'hadir' | 'terlambat' | 'alpha'
   latitude?: number | null
   longitude?: number | null
+  documentUrl?: string
 }
 
 export default function AdminAbsensiPage() {
@@ -122,20 +123,21 @@ export default function AdminAbsensiPage() {
               <TableHead>Jam Pulang</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Lokasi</TableHead>
+              <TableHead>Dokumen</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {loading ? (
               Array.from({ length: 8 }).map((_, i) => (
                 <TableRow key={i}>
-                  {Array.from({ length: 6 }).map((_, j) => (
+                  {Array.from({ length: 7 }).map((_, j) => (
                     <TableCell key={j}><Skeleton className="h-5 w-full" /></TableCell>
                   ))}
                 </TableRow>
               ))
             ) : records.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={6} className="py-12 text-center text-muted-foreground">
+                <TableCell colSpan={7} className="py-12 text-center text-muted-foreground">
                   <CalendarCheck className="mx-auto mb-2 h-8 w-8 opacity-30" />
                   Tidak ada data absensi
                 </TableCell>
@@ -162,6 +164,20 @@ export default function AdminAbsensiPage() {
                         className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
                       >
                         <MapPin className="h-3 w-3" /> Lihat Map
+                      </a>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {rec.documentUrl ? (
+                      <a
+                        href={rec.documentUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs text-primary hover:underline font-medium"
+                      >
+                        Lihat
                       </a>
                     ) : (
                       <span className="text-xs text-muted-foreground">—</span>
