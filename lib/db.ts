@@ -1,4 +1,8 @@
 import mongoose from 'mongoose'
+import '@/models/User'
+import '@/models/Attendance'
+import '@/models/LeaveRequest'
+import '@/models/Notification'
 
 const MONGODB_URI = process.env.MONGODB_URI!
 
@@ -26,6 +30,7 @@ export async function connectDB() {
     const opts = {
       bufferCommands: false,
     }
+    
     cached.promise = mongoose.connect(MONGODB_URI, opts)
   }
 
