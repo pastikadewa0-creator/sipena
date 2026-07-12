@@ -216,7 +216,7 @@ export default function EmployeeAbsensiPage() {
                     style={{ border: 0 }}
                     loading="lazy"
                     allowFullScreen
-                    src={`https://www.google.com/maps/embed/v1/view?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&center=${coords.latitude},${coords.longitude}&zoom=17`}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.longitude - 0.002},${coords.latitude - 0.0015},${coords.longitude + 0.002},${coords.latitude + 0.0015}&layer=mapnik&marker=${coords.latitude},${coords.longitude}`}
                   />
                   <p className="p-2 text-xs text-muted-foreground bg-muted/30 text-center font-mono">
                     Koordinat: {coords.latitude.toFixed(6)}, {coords.longitude.toFixed(6)}

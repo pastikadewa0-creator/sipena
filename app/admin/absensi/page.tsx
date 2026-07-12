@@ -156,7 +156,7 @@ export default function AdminAbsensiPage() {
                   <TableCell>
                     {rec.latitude && rec.longitude ? (
                       <a
-                        href={`https://www.google.com/maps/search/?api=1&query=${rec.latitude},${rec.longitude}`}
+                        href={`https://www.openstreetmap.org/?mlat=${rec.latitude}&mlon=${rec.longitude}#map=17/${rec.latitude}/${rec.longitude}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1 text-xs text-primary hover:underline font-medium"
