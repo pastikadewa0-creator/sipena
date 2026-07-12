@@ -89,7 +89,7 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
                     if (item.isProfile) {
                       e.preventDefault()
                       setProfileOpen(true)
-                    } else if (item.isComingSoon) {
+                    } else if ((item as any).isComingSoon) {
                       e.preventDefault()
                       toast.info('Fitur Segera Hadir!')
                     }
