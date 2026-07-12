@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation'
 import { Bell, Menu } from 'lucide-react'
 import Link from 'next/link'
+import useSWR from 'swr'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -33,10 +34,13 @@ interface AppTopbarProps {
   onMenuToggle?: () => void
 }
 
-export function AppTopbar({ name, role, pendingCount = 0, onMenuToggle }: AppTopbarProps) {
+export function AppTopbar({ name, role, pendingCount: initialPendingCount = 0, onMenuToggle }: AppTopbarProps) {
   const pathname = usePathname()
   const router = useRouter()
   const title = pageTitles[pathname] || 'SIPENA'
+
+  const { data } = useSWR(role === 'admin' ? '/api/dashboard/summary' : null, (url: string) => fetch(url).then(r => r.json()), { refreshInterval: 30000 })
+  const pendingCount = data?.pendingIzin ?? initialPendingCount
 
   async function handleLogout() {
     try {
