@@ -205,7 +205,7 @@ export default function EmployeeIzinPage() {
             </div>
 
             {/* Tanggal */}
-            <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-4">
               <div className="space-y-1.5">
                 <Label htmlFor="leave-start">Tanggal Mulai</Label>
                 <Input

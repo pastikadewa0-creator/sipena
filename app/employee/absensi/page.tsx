@@ -64,7 +64,12 @@ export default function EmployeeAbsensiPage() {
         },
         (error) => {
           console.error('Error fetching geolocation', error)
+          // Fallback location if permission denied (Jakarta)
+          setCoords({ latitude: -6.200000, longitude: 106.816666 })
           setLoadingCoords(false)
+          toast.warning('Akses lokasi ditolak atau tidak tersedia', {
+            description: 'Menampilkan lokasi default. Harap izinkan akses lokasi di pengaturan browser (ikon gembok di URL) lalu refresh halaman.'
+          })
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
       )
