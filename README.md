@@ -1,36 +1,108 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# HR Pro — Sistem Absensi Karyawan
 
-## Getting Started
+Sistem manajemen absensi dan pengajuan izin karyawan berbasis web yang dibangun dengan Next.js 16, MongoDB, dan shadcn/ui.
 
-First, run the development server:
+## 🚀 Fitur
 
+### Admin
+- **Dashboard** — Total karyawan aktif, izin menunggu, riwayat pengajuan terbaru
+- **Data Karyawan** — Tambah, cari, aktifkan/nonaktifkan karyawan
+- **Rekap Absensi** — Lihat semua absensi dengan filter status dan rentang tanggal
+- **Pengajuan Izin** — Setujui atau tolak pengajuan izin karyawan
+
+### Karyawan
+- **Dashboard** — Status absen hari ini + KPI bulan ini
+- **Absensi** — Absen masuk/pulang dengan jam real-time + upload dokumen
+- **Pengajuan Izin** — Ajukan izin/sakit/cuti/tugas luar + upload surat
+
+## ⚙️ Setup
+
+### 1. Copy environment variables
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.local.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Edit `.env.local` dengan credentials asli:
+- `MONGODB_URI` — MongoDB Atlas connection string
+- `SESSION_SECRET` — Random string min. 32 karakter
+- `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` — Dari dashboard Cloudinary
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 2. Generate SESSION_SECRET
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Seed database (akun demo)
+```bash
+npm run seed
+```
 
-## Learn More
+Akun yang dibuat:
+| Username | Password | Role |
+|----------|----------|------|
+| admin | admin123 | Admin |
+| budi | karyawan123 | Karyawan |
+| sari | karyawan123 | Karyawan |
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Jalankan development server
+```bash
+npm run dev
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Buka [http://localhost:3000](http://localhost:3000)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tech Stack
 
-## Deploy on Vercel
+| Layer | Technology |
+|-------|-----------|
+| Framework | Next.js 16 (App Router) |
+| Database | MongoDB Atlas + Mongoose |
+| Auth | Jose JWT (httpOnly cookies) |
+| UI | shadcn/ui + Tailwind CSS v4 |
+| File Upload | Cloudinary |
+| Validation | Zod |
+| Type Safety | TypeScript |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📁 Struktur Project
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+hr-pro/
+├── app/
+│   ├── (auth)/login/          # Login page
+│   ├── (admin)/               # Admin dashboard & pages
+│   │   ├── dashboard/
+│   │   ├── karyawan/
+│   │   ├── absensi/
+│   │   └── izin/
+│   ├── (employee)/            # Karyawan pages
+│   │   ├── dashboard/
+│   │   ├── absensi/
+│   │   └── izin/
+│   └── api/                   # API routes
+│       ├── auth/
+│       ├── attendance/
+│       ├── dashboard/
+│       ├── leave/
+│       ├── upload/
+│       └── users/
+├── components/
+│   ├── layout/                # AppShell, Sidebar, Topbar
+│   └── ui/                    # shadcn + custom components
+├── lib/
+│   ├── db.ts                  # MongoDB connection
+│   ├── session.ts             # JWT session management
+│   └── dal.ts                 # Data Access Layer
+├── models/                    # Mongoose schemas
+│   ├── User.ts
+│   ├── Attendance.ts
+│   └── LeaveRequest.ts
+├── proxy.ts                   # Route protection
+└── scripts/seed.ts            # Database seeder
+```
+
+## 🌐 Deploy ke Vercel
+
+1. Push ke GitHub
+2. Import project di [vercel.com](https://vercel.com)
+3. Tambahkan Environment Variables di Vercel Dashboard
+4. Deploy!
