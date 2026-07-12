@@ -5,8 +5,10 @@ import { AppSidebar } from './app-sidebar'
 import { AppTopbar } from './app-topbar'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, CalendarCheck, ClipboardList } from 'lucide-react'
+import { LayoutDashboard, CalendarCheck, ClipboardList, LogOut } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 interface AppShellProps {
   children: React.ReactNode
@@ -18,12 +20,23 @@ interface AppShellProps {
 export function AppShell({ children, role, name, pendingCount = 0 }: AppShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
 
   const navItems = [
     { href: '/employee/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/employee/absensi', label: 'Absensi', icon: CalendarCheck },
     { href: '/employee/izin', label: 'Izin', icon: ClipboardList },
   ]
+
+  async function handleLogout() {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' })
+      router.push('/login')
+      router.refresh()
+    } catch {
+      toast.error('Gagal logout. Coba lagi.')
+    }
+  }
 
   if (role === 'karyawan') {
     return (
@@ -58,6 +71,15 @@ export function AppShell({ children, role, name, pendingCount = 0 }: AppShellPro
                 </Link>
               )
             })}
+            
+            {/* Explicit Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="flex flex-col items-center justify-center gap-1 text-xs font-medium w-20 h-full transition-colors text-muted-foreground hover:text-destructive"
+            >
+              <LogOut className="h-5 w-5" />
+              <span>Keluar</span>
+            </button>
           </div>
         </nav>
       </div>
