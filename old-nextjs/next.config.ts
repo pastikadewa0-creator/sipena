@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   },
   // Suppress known Mongoose/serverless warning
   serverExternalPackages: ['mongoose'],
+  turbopack: {},
 }
 
 export default withPWA(nextConfig)
