@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 chcp 65001 >nul
 title SIPENA - Instalasi Otomatis
 color 0A
@@ -89,7 +90,14 @@ echo [INFO] Membuat database sipena_db di MySQL...
 echo        (Pastikan MySQL XAMPP sudah RUNNING!)
 echo.
 
-C:\xampp\mysql\bin\mysql.exe -u root -e "CREATE DATABASE IF NOT EXISTS sipena_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>nul
+where mysql >nul 2>nul
+if %errorlevel% equ 0 (
+    mysql -u root -e "CREATE DATABASE IF NOT EXISTS sipena_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>nul
+) else if exist C:\xampp\mysql\bin\mysql.exe (
+    C:\xampp\mysql\bin\mysql.exe -u root -e "CREATE DATABASE IF NOT EXISTS sipena_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>nul
+) else (
+    cmd /c exit 1
+)
 if %errorlevel% neq 0 (
     echo [WARNING] Tidak bisa membuat database secara otomatis.
     echo           Silakan buat database secara manual:
